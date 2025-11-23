@@ -1,43 +1,43 @@
 class SudokuSolver:
     def __init__(self, sudoku):
-        self.sudoku = [[0 for _ in range(9)] for _ in range(9)]
-        self.rows_used  = [set() for _ in range(9)]
-        self.cols_used  = [set() for _ in range(9)]
-        self.boxes_used = [set() for _ in range(9)]
+        self._sudoku = [[0 for _ in range(9)] for _ in range(9)]
+        self._rows_used  = [set() for _ in range(9)]
+        self._cols_used  = [set() for _ in range(9)]
+        self._boxes_used = [set() for _ in range(9)]
 
         for row in range(9):
             for col in range(9):
                 number = sudoku[row][col]
                 if number != 0:
-                    self.sudoku[row][col] = sudoku[row][col]
-                    box = self.get_box_idx(row, col)
-                    self.put_number(row, col, box, number)
+                    self._sudoku[row][col] = sudoku[row][col]
+                    box = self._get_box_idx(row, col)
+                    self._put_number(row, col, box, number)
 
-    def get_box_idx(self, row, col):
+    def _get_box_idx(self, row, col):
         return (row // 3) * 3 + (col // 3)
 
-    def put_number(self, row, col, box, number):
-        self.sudoku[row][col] = number
-        self.rows_used[row].add(number)
-        self.cols_used[col].add(number)
+    def _put_number(self, row, col, box, number):
+        self._sudoku[row][col] = number
 
-        self.boxes_used[box].add(number)
+        self._rows_used[row].add(number)
+        self._cols_used[col].add(number)
+        self._boxes_used[box].add(number)
 
-    def is_valid(self, row, col, box, number):
-        return number not in self.rows_used[row] and number not in self.cols_used[col] and number not in self.boxes_used[box]
+    def _is_valid(self, row, col, box, number):
+        return number not in self._rows_used[row] and number not in self._cols_used[col] and number not in self._boxes_used[box]
 
-    def get_least_options_cell(self):
+    def _get_least_options_cell(self):
         ALL_NUMBERS = set(range(1, 10))
 
         best = None
         best_count = 10
-
+        
         for row in range(9):
             for col in range(9):
-                if self.sudoku[row][col] == 0:
-                    box = self.get_box_idx(row, col)
+                if self._sudoku[row][col] == 0:
+                    box = self._get_box_idx(row, col)
 
-                    candidates = ALL_NUMBERS - self.rows_used[row] - self.cols_used[col] - self.boxes_used[box]
+                    candidates = ALL_NUMBERS - self._rows_used[row] - self._cols_used[col] - self._boxes_used[box]
                     count = len(candidates)
 
                     if count < best_count:
@@ -50,23 +50,23 @@ class SudokuSolver:
         return best
 
     def solve(self):
-        cell = self.get_least_options_cell()
+        cell = self._get_least_options_cell()
         if cell is None:
-            return self.sudoku
+            return self._sudoku
 
         row, col = cell
         for number in range(1, 10):
-            box = self.get_box_idx(row, col)
-            if self.is_valid(row, col, box, number):
-                self.put_number(row, col, box, number)
+            box = self._get_box_idx(row, col)
+            if self._is_valid(row, col, box, number):
+                self._put_number(row, col, box, number)
 
                 if self.solve() is not None:
-                    return self.sudoku
+                    return self._sudoku
 
-                self.sudoku[row][col] = 0
-                self.rows_used[row].remove(number)
-                self.cols_used[col].remove(number)
+                self._sudoku[row][col] = 0
 
-                self.boxes_used[box].remove(number)
+                self._rows_used[row].remove(number)
+                self._cols_used[col].remove(number)
+                self._boxes_used[box].remove(number)
 
         return None
