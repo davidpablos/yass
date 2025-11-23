@@ -4,29 +4,26 @@ class SudokuSolver:
         self.rows_used  = [set() for _ in range(9)]
         self.cols_used  = [set() for _ in range(9)]
         self.boxes_used = [set() for _ in range(9)]
+
         for row in range(9):
             for col in range(9):
                 number = sudoku[row][col]
                 if number != 0:
                     self.sudoku[row][col] = sudoku[row][col]
                     box = self.get_box_idx(row, col)
-                    self.rows_used[row].add(number)
-                    self.cols_used[col].add(number)
-                    self.boxes_used[box].add(number)
+                    self.put_number(row, col, box, number)
 
     def get_box_idx(self, row, col):
         return (row // 3) * 3 + (col // 3)
 
-    def put_number(self, row, col, number):
+    def put_number(self, row, col, box, number):
         self.sudoku[row][col] = number
         self.rows_used[row].add(number)
         self.cols_used[col].add(number)
 
-        box = self.get_box_idx(row, col)
         self.boxes_used[box].add(number)
 
-    def is_valid(self, row, col, number):
-        box = self.get_box_idx(row, col)
+    def is_valid(self, row, col, box, number):
         return number not in self.rows_used[row] and number not in self.cols_used[col] and number not in self.boxes_used[box]
 
     def get_least_options_cell(self):
@@ -59,8 +56,9 @@ class SudokuSolver:
 
         row, col = cell
         for number in range(1, 10):
-            if self.is_valid(row, col, number):
-                self.put_number(row, col, number)
+            box = self.get_box_idx(row, col)
+            if self.is_valid(row, col, box, number):
+                self.put_number(row, col, box, number)
 
                 if self.solve() is not None:
                     return self.sudoku
@@ -69,7 +67,6 @@ class SudokuSolver:
                 self.rows_used[row].remove(number)
                 self.cols_used[col].remove(number)
 
-                box = self.get_box_idx(row, col)
                 self.boxes_used[box].remove(number)
 
         return None
